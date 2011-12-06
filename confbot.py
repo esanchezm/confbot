@@ -11,6 +11,7 @@ import simplejson as json
 import socket
 
 commandchrs = '/)'
+plusvars = {}
 
 def getlocale():
     uset = DictIni("usettings.ini")
@@ -1109,6 +1110,7 @@ def messageCB(con,msg):
                         print '>>>', time.strftime('%Y-%m-%d %H:%M:%S'), 'RECONNECT... network delay it too long: %d\'s' % (t1-t)
                     raise RECONNECT_COMMAND
             return
+            print 'body ' + body
         userjid[whoid] = unicode(msg.getFrom())
         if len(msg.getBody())>1024 and not issadmin(whoid):
             if conf.general['floodback'] == 1:
@@ -1125,6 +1127,19 @@ def messageCB(con,msg):
                 print '......CMD......... %s [%s]' % (msg.getFrom(), msg.getBody())
             cmd(msg.getFrom(),msg.getBody())
         else:
+            s = msg.getBody()
+            if s.find('++') != -1:
+                plusvar = s[:s.find('++')].rpartition(' ')[2]
+                try:
+                    value = plusvars[plusvar]
+                    value += 1
+                except KeyError:
+                    value = 1
+                except:
+                    raise
+                plusvars[plusvar] = value
+                sendtoall(plusvar + '!!! now at ' + str(value))
+
             # check away
             if has_userflag(msg.getFrom().getStripped(), 'away'):
                 del_userflag(msg.getFrom().getStripped(), 'away')
