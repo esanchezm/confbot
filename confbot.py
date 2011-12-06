@@ -13,8 +13,10 @@ import socket
 commandchrs = '/)'
 plusvars = {}
 
-def plusminus(s, keyword):
+def lulzritmetic(s, keyword):
         plusvar = s[:s.find(keyword)].rpartition(' ')[2]
+        if keyword == '**':
+            operand = int(s.rpartition('**')[2].partition(' ')[0])
         try:
             value = plusvars[plusvar]
         except KeyError:
@@ -23,14 +25,17 @@ def plusminus(s, keyword):
             raise
         if keyword == '++':
             value += 1
-        else:
+        elif keyword == '--':
             value -= 1
+        else:
+            value = value ** operand
         plusvars[plusvar] = value
         sendtoall(plusvar + '!!! now at ' + str(value))
 
 def process_lulz(s):
-    lulzwords = [ ['++', plusminus],
-                  ['--', plusminus] ]
+    lulzwords = [ ['++', lulzritmetic],
+                  ['--', lulzritmetic],
+                  ['**', lulzritmetic] ]
     for key, lulztion in lulzwords:
         if s.find(key) != -1:
             lulztion(s, key)
