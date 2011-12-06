@@ -120,6 +120,7 @@ class Node:
         
     def putData(self, data):
         "Set the nodes textual data" 
+        self.data = []
         self.data.append(data)
 
     def insertData(self, data):
