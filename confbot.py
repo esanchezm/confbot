@@ -61,9 +61,11 @@ def log_message(msg, msgfrom=None):
 
     cur = db.cursor()
     now = datetime.datetime.now()
+    if msgfrom is None:
+        msgfrom = ""
 
     cur.execute("INSERT INTO log VALUES (?, ?, ?)",
-            (now, msgfrom or "", msg))
+            (now, msgfrom, msg))
 
     db.commit()
     cur.close()
