@@ -84,8 +84,6 @@ def getdisplayname(x):
         x = x[:x.find("/")]
     if hasnick(x):
         x = nick.nickname[x]
-        if issuper(getjid(x)):
-            x = '_'+ x +'_'
     if '%' in x and 'msn.jabber' in x[x.find('%'):]:
         x = x[:x.find('%')]
     if '@' in x and x[x.find('@'):] == "@" + server:
