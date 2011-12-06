@@ -13,6 +13,28 @@ import socket
 commandchrs = '/)'
 plusvars = {}
 
+def plusminus(s, keyword):
+        plusvar = s[:s.find(keyword)].rpartition(' ')[2]
+        try:
+            value = plusvars[plusvar]
+        except KeyError:
+            value = 0
+        except:
+            raise
+        if keyword == '++':
+            value += 1
+        else:
+            value -= 1
+        plusvars[plusvar] = value
+        sendtoall(plusvar + '!!! now at ' + str(value))
+
+def process_lulz(s):
+    lulzwords = [ ['++', plusminus],
+                  ['--', plusminus] ]
+    for key, lulztion in lulzwords:
+        if s.find(key) != -1:
+            lulztion(s, key)
+
 def getlocale():
     uset = DictIni("usettings.ini")
     nick = DictIni("nicklist.ini")
@@ -1128,17 +1150,7 @@ def messageCB(con,msg):
             cmd(msg.getFrom(),msg.getBody())
         else:
             s = msg.getBody()
-            if s.find('++') != -1:
-                plusvar = s[:s.find('++')].rpartition(' ')[2]
-                try:
-                    value = plusvars[plusvar]
-                    value += 1
-                except KeyError:
-                    value = 1
-                except:
-                    raise
-                plusvars[plusvar] = value
-                sendtoall(plusvar + '!!! now at ' + str(value))
+            process_lulz(s)
 
             # check away
             if has_userflag(msg.getFrom().getStripped(), 'away'):
