@@ -84,7 +84,6 @@ def getdisplayname(x):
         x = x[:x.find("/")]
     if hasnick(x):
         x = nick.nickname[x]
-        x = x.capitalize()
         if issuper(getjid(x)):
             x = '_'+ x +'_'
     if '%' in x and 'msn.jabber' in x[x.find('%'):]:
@@ -342,7 +341,7 @@ def sendtoall(msg, butnot=[], including=[], status=None):
                     sendtoone(i, '%s says:\n    %s' % (msgname, msg))
                     #sendtoone(i, '   %s' % (msg))
                 else:
-                    sendtoone(i, '<%s> %s' % (msgname, msg))
+                    sendtoone(i, '[%s] %s' % (msgname, msg))
             else:
                 sendtoone(i, msg)
 
@@ -592,9 +591,11 @@ def cmd_help(who, msg):
         systoone(who, _('See http://coders.meta.net.nz/~perry/jabber/confbot.php for more details.\nAlso see http://www.donews.net/limodou for Chinese version.'))
 
 def cmd_w(who, msg):
+    '"/w" Alias for /names'
     cmd_names(who, msg)
         
 def cmd_who(who, msg):
+    '"/who" Alias for /names'
     cmd_names(who, msg)
         
 def cmd_names(who, msg):
