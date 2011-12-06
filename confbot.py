@@ -2,7 +2,7 @@
 """confbot -- a conference bot for google talk."""
 
 import sys, time, traceback, re, sqlite3, datetime, logging
-import jabber, xmlstream, i18n, stomp
+import jabber, xmlstream, i18n
 import os.path
 import locale
 import commands as cmds
