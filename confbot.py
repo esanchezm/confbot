@@ -71,7 +71,6 @@ statcheck = 0
 conf = None 
 userinfo = None
 nick = None
-db = None
 
 LOG_FILENAME = "debug.log"
 logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG,)
@@ -90,20 +89,6 @@ class MSG_COMMAND(Exception):pass
 class CUSS_COMMAND(Exception):pass
 class NOMAN_COMMAND(Exception):pass
 class RECONNECT_COMMAND(Exception):pass
-
-def log_message(msg, msgfrom=None):
-    global db
-
-    cur = db.cursor()
-    now = datetime.datetime.now()
-    if msgfrom is None:
-        msgfrom = ""
-
-    cur.execute("INSERT INTO log VALUES (?, ?, ?)",
-            (now, msgfrom, msg))
-
-    db.commit()
-    cur.close()
 
 #==================================================
 #=         String Tools                           =
@@ -350,11 +335,6 @@ def sendtoall(msg, butnot=[], including=[], status=None):
     global lastlog, msgname
     r = con.getRoster()
 
-    if msgname:
-        log_message(msg, msgname)
-    else:
-        log_message(msg)
-
     if conf.general.debug:
             if msgname:
                 print time.strftime("%Y-%m-%d %H:%M:%S"), "<", msgname, ">", msg.encode(locale.getdefaultlocale()[1],'replace')
@@ -387,8 +367,6 @@ def sendtoall(msg, butnot=[], including=[], status=None):
 def sendtoadmin(msg, butnot=[], including=[]):
     global lastlog
     r = con.getRoster()
-
-    log_message(msg)
 
     if conf.general.debug:
         try:
@@ -1387,7 +1365,6 @@ def connect():
     
 #   systoall(_('The channel has started.'))
     print '>>> Online with Revision %s' % get_vcs_version()
-    log_message('The bot is started!')
 
 if __name__ == '__main__':
     readall()
@@ -1407,7 +1384,6 @@ if __name__ == '__main__':
                 acommands[i.lower()[5:]] = func
 
     general = conf.general
-    db = sqlite3.connect("bot.db")
     con = None
     JID = "%s@%s/%s" % (general['account'], general['server'], general['resource'])
     last_update=(time.time()-4*60*60)+60 # Send the update in 60 seconds
