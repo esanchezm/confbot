@@ -9,6 +9,7 @@ import commands as cmds
 from dict4ini import DictIni
 import simplejson as json
 import socket
+import re
 
 commandchrs = '/)'
 plusvars = {}
@@ -25,20 +26,26 @@ def lulzritmetic(s, keyword):
             raise
         if keyword == '++':
             value += 1
+            body = re.sub(r''+plusvar+'\+\+', plusvar+'++ [woot! now at '+repr(value)+']', s)
         elif keyword == '--':
             value -= 1
-        else:
-            value = value ** operand
+            body = re.sub(r''+plusvar+'\-\-', plusvar+'-- [woot! now at '+repr(value)+']', s)
         plusvars[plusvar] = value
-        sendtoall(plusvar + '!!! now at ' + str(value))
+        return body
 
-def process_lulz(s):
+def process_lulz(whoid, msg):
+    body = msg.getBody()
     lulzwords = [ ['++', lulzritmetic],
                   ['--', lulzritmetic],
                   ['**', lulzritmetic] ]
+    found = False
     for key, lulztion in lulzwords:
-        if s.find(key) != -1:
-            lulztion(s, key)
+        if body.find(key) != -1:
+            body = lulztion(body, key)
+            found = True
+    if found:
+        sendtoone(whoid, '[%s] %s' % (getdisplayname(whoid), body))
+    return body
 
 def getlocale():
     uset = DictIni("usettings.ini")
@@ -1154,8 +1161,7 @@ def messageCB(con,msg):
                 print '......CMD......... %s [%s]' % (msg.getFrom(), msg.getBody())
             cmd(msg.getFrom(),msg.getBody())
         else:
-            s = msg.getBody()
-            process_lulz(s)
+            msg.setBody(process_lulz(whoid, msg))
 
             # check away
             if has_userflag(msg.getFrom().getStripped(), 'away'):
