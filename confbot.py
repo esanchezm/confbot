@@ -48,7 +48,6 @@ qu = an = ra = None
 
 last_activity = time.time()
 lastlog = []
-stomp_conn = None
 
 class ADMIN_COMMAND(Exception):pass
 class TOOLOW_COMMAND(Exception):pass
@@ -56,17 +55,6 @@ class MSG_COMMAND(Exception):pass
 class CUSS_COMMAND(Exception):pass
 class NOMAN_COMMAND(Exception):pass
 class RECONNECT_COMMAND(Exception):pass
-
-def stomp_connect():
-    stomp_conn = stomp.Connection()
-    stomp_conn.start()
-    stomp_conn.connect()
-
-def send_stomp_msg(message, destination):
-    if not stomp_conn:
-        stomp_connect()
-
-    stomp_conn.send(' ' + message, destination=destination)
 
 def log_message(msg, msgfrom=None):
     global db
@@ -79,15 +67,6 @@ def log_message(msg, msgfrom=None):
 
     db.commit()
     cur.close()
-
-    body = { "time": now.strftime("%H:%M:%S"), "msg": msg }
-    if msgfrom:
-        body["sender"] = msgfrom
-
-    try:
-        send_stomp_msg(' ' + json.dumps(body), destination='/group/%s' % general["identifier"])
-    except:
-        pass
 
 #==================================================
 #=         String Tools                           =
@@ -1451,6 +1430,4 @@ if __name__ == '__main__':
             time.sleep(1)
             con = None
 
-    if stomp_conn:
-        stomp_conn.disconnect()
 
