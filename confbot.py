@@ -15,6 +15,8 @@ import meme
 from sqlobject import *
 from sqlobjects import *
 
+from imdb import IMDb
+
 commandchrs = '/)'
 lastmsgs = {}
 
@@ -614,11 +616,19 @@ def cmd_smite(who, msg):
     else:
         systoall(_('%s smites %s').para(getdisplayname(who),smitee))
 
+def cmd_listmemes(who, msg):
+    '"/listmemes" Get a list of available memes'
+    memes = meme.memes.keys()
+    memes.sort()
+    meme_str = ', '.join(memes)
+    systoone(who, _('Available memes: %s').para(meme_str))
+    return
+
 def cmd_meme(who, msg):
     '"/meme" Generate a meme image in memegenerator.net. Syntax: /meme meme \'text0\' \'text1\''
     r = msg.split('\'')
     if msg == 'list':
-        systoone(who, _('Avaliable memes: %s').para(meme.list_memes()))
+        systoone(who, _('Avaliable memes %s').para(meme.list_memes()))
         return
     meme_id = msg.split(' ')[0]
     if not meme_id in meme.memes.keys():
@@ -638,6 +648,35 @@ def cmd_meme(who, msg):
         return
 
     systoall(_('%s generated this meme: %s').para(getdisplayname(who), memeurl))
+
+def cmd_imdb(who, msg):
+    '"/imdb" Print movie synopsis from imdb. Usage /imdb Movie Title'
+    ia = IMDb()
+    ml = ia.search_movie(msg)
+    if len(ml) == 0:
+        systoone(who, _('That movie couldn\'t be found'))
+    m = ml[0]
+    ia.update(m)
+    systoall(_('%s asked me to share this movie details with you:').para(getdisplayname(who)))
+    systoall(_('Title: %s').para(m['title']))
+    systoall(_('Year: %s').para(m['year']))
+    gs = ''
+    for g in m['genres']:
+        gs += g + ', '
+    gs = gs[:-2]
+    systoall(_('Genres: %s').para(gs))
+    actors = m['cast']
+    if len(actors) > 10:
+        copy = []
+        for i in range(10):
+            copy.append(actors[i])
+        actors = copy
+    cs = ''
+    for actor in actors:
+        cs += actor['name'] + ', '
+    cs = cs[:-2]
+    systoall(_('Cast: %s').para(cs))
+    systoall(_('You can get more info for this movie here: http://www.imdb.com/title/tt%s/').para(m.movieID))
 
 def cmd_polls(who, msg):
     '"/polls" List all the finished polls'
@@ -1611,5 +1650,6 @@ if __name__ == '__main__':
             traceback.print_exc()
             time.sleep(1)
             con = None
+
 
 
