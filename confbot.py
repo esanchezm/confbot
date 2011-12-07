@@ -610,17 +610,34 @@ def cmd_smite(who, msg):
     else:
         systoall(_('%s smites %s').para(getdisplayname(who),smitee))
 
+def cmd_listmemes(who, msg):
+    '"/listmemes" Get a list of available memes'
+    memes = meme.memes.keys()
+    memes.sort()
+    meme_str = ', '.join(memes)
+    systoone(who, _('Available memes: %s').para(meme_str))
+    return
+
 def cmd_meme(who, msg):
-    '"/meme" Generate a meme image in memegenerator.net. Syntax: /meme genID imageID \'text0\' \'text1\''
+    '"/meme" Generate a meme image in memegenerator.net. Syntax: /meme meme \'text0\' \'text1\''
     r = msg.split('\'')
-    e = r[0].split(' ')
-    if len(r) != 5 or len(e) != 3:
-        systoone(who, _('Syntax is /meme genId imageID \'text0\' \'text1\' ... Quotation matters'))
-	return 
-    memeurl = meme.create_meme(e[0], e[1], r[1], r[3])
+    meme_id = msg.split(' ')[0]
+    if not meme_id in meme.memes.keys():
+        systoone(who, _('Unkown meme %s.').para(meme_id))
+        cmd_listmemes(who, msg)
+        return
+   
+    line1 = r[1]
+    line2 = r[3]
+    if not meme_id or not line1 or not line2:
+        systoone(who, _('Syntax is /meme meme \'text0\' \'text1\' ... Quotation matters'))
+        return
+
+    memeurl = meme.create_meme(meme_id, line1, line2)
     if memeurl == 'Error' or memeurl == None:
-        systoone(who, _('There was an error generating that meme. Check ID\'s'))
-	return
+        systoone(who, _('There was an error generating the meme.'))
+        return
+
     systoall(_('%s generated this meme: %s').para(getdisplayname(who),memeurl))
 
 def cmd_poll(who, msg):
