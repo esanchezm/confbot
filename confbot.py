@@ -12,26 +12,30 @@ import socket
 import re
 import poll
 import meme
+from sqlobject import *
+from sqlobjects import *
 
 commandchrs = '/)'
-plusvars = {}
 lastmsgs = {}
+
+def lulzdb():
+    dbpath = os.getcwd() + '/' + 'lulz.db'
+    connection = connectionForURI('sqlite://' + dbpath)
+    sqlhub.processConnection = connection
 
 def lulzritmetic(s, whoid, keyword):
         plusvar = s[:s.find(keyword)].rpartition(' ')[2]
-        try:
-            value = plusvars[plusvar]
-        except KeyError:
-            value = 0
-        except:
-            raise
+        p = Variable.select(Variable.q.name == plusvar)
+        if len(list(p)) == 0:
+            v = Variable(name = plusvar, value = 0)
+        else:
+            v = list(p)[0]
         if keyword == '++':
-            value += 1
-            body = re.sub(r''+plusvar+'\+\+', plusvar+'++ [woot! now at '+repr(value)+']', s)
+            v.value += 1 
+            body = re.sub(r''+plusvar+'\+\+', plusvar+'++ [woot! now at '+repr(v.value)+']', s)
         elif keyword == '--':
-            value -= 1
-            body = re.sub(r''+plusvar+'\-\-', plusvar+'-- [woot! now at '+repr(value)+']', s)
-        plusvars[plusvar] = value
+            v.value -= 1
+            body = re.sub(r''+plusvar+'\-\-', plusvar+'-- [woot! now at '+repr(v.value)+']', s)
         return body
 
 def lulzplace(s, whoid, keyword):
@@ -1529,6 +1533,7 @@ def connect():
     print '>>> Online with Revision %s' % get_vcs_version()
 
 if __name__ == '__main__':
+    lulzdb()
     readall()
 
     reload(sys)

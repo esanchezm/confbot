@@ -3,8 +3,12 @@
 
 import sqlite3, datetime, glob, sys, re, os
 
+from sqlobject import *
+import sqlobjects
+
 DBNAME = "bot.db"
 POLLDBNAME = "polls.db"
+LULZDBNAME = 'lulz.db'
 
 def insert_entry(db, entry):
     db.execute("INSERT INTO log VALUES (?, ?, ?)", (entry["time"], entry["sender"], entry["msg"]))
@@ -87,6 +91,13 @@ COMMIT;
     db.commit()
     c.close()
     db.close()
+
+    dbpath = os.getcwd() + '/' + LULZDBNAME
+    if os.path.exists(dbpath):
+        os.unlink(dbpath)
+    connection = connectionForURI('sqlite://' + dbpath)
+    sqlhub.processConnection = connection
+    sqlobjects.Variable.createTable()
 
 if sys.argv[1] == "import":
     db = sqlite3.connect(DBNAME)
