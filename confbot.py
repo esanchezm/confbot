@@ -662,7 +662,7 @@ def cmd_poll(who, msg):
     systoall(_('%s has a question for you:\n----\n%s\n----\nPlease vote using /vote <0|1> [reason]').para(getdisplayname(who), msg))
 
 def cmd_endpoll(who, msg):
-    '"/endpoll" Finish a poll. Syntax: /endpoll'
+    '"/endpoll" Finish a poll.'
     
     active_poll = poll.PollFactory.get_active_poll()
     if active_poll is None:
@@ -721,9 +721,13 @@ def cmd_help(who, msg):
     else:
         jid = who.getStripped()
         f = _
-        systoone(who, _('Commands: \n%s').para(' /' + ' /'.join(["%-20s%s\n" % (x, unicode(f(y.__doc__, get_userlang(jid))) or "") for x, y in commands.items()])))
+        cmds = commands.items()
+        cmds.sort()
+        systoone(who, _('Commands: \n%s').para(' /' + ' /'.join(["%-20s%s\n" % (x, unicode(f(y.__doc__, get_userlang(jid))) or "") for x, y in cmds])))
         if issadmin(who.getStripped()):
-            systoone(who, _('Admin commands: \n%s').para(' /' + ' /'.join(["%-20s%s\n" % (x, unicode(f(y.__doc__, get_userlang(jid))) or "") for x, y in acommands.items()])))
+            acmds = acommands.items()
+            acmds.sort()
+            systoone(who, _('Admin commands: \n%s').para(' /' + ' /'.join(["%-20s%s\n" % (x, unicode(f(y.__doc__, get_userlang(jid))) or "") for x, y in acmds])))
         systoone(who, _('See http://coders.meta.net.nz/~perry/jabber/confbot.php for more details.\nAlso see http://www.donews.net/limodou for Chinese version.'))
 
 def cmd_w(who, msg):
