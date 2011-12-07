@@ -39,6 +39,16 @@ def create_meme(meme, t0, t1):
 
     return 'http://memegenerator.net' + s[i:j]
 
+def list_memes():
+    l = []
+    list = ''
+    for m in memes:
+        l.append(m)
+    l.sort()
+    for i in l:
+        list += i + ', '
+    return list[:-2]
+
 if __name__ == '__main__':
     if len(sys.argv) != 5:
         print('Usage meme generatorId imageId text0 text1')

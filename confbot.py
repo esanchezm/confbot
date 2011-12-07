@@ -610,17 +610,12 @@ def cmd_smite(who, msg):
     else:
         systoall(_('%s smites %s').para(getdisplayname(who),smitee))
 
-def cmd_listmemes(who, msg):
-    '"/listmemes" Get a list of available memes'
-    memes = meme.memes.keys()
-    memes.sort()
-    meme_str = ', '.join(memes)
-    systoone(who, _('Available memes: %s').para(meme_str))
-    return
-
 def cmd_meme(who, msg):
     '"/meme" Generate a meme image in memegenerator.net. Syntax: /meme meme \'text0\' \'text1\''
     r = msg.split('\'')
+    if msg == 'list':
+        systoone(who, _('Avaliable memes: %s').para(meme.list_memes()))
+        return
     meme_id = msg.split(' ')[0]
     if not meme_id in meme.memes.keys():
         systoone(who, _('Unkown meme %s.').para(meme_id))
