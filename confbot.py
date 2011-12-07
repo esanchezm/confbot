@@ -14,8 +14,9 @@ import poll
 
 commandchrs = '/)'
 plusvars = {}
+lastmsgs = {}
 
-def lulzritmetic(s, keyword):
+def lulzritmetic(s, whoid, keyword):
         plusvar = s[:s.find(keyword)].rpartition(' ')[2]
         try:
             value = plusvars[plusvar]
@@ -32,17 +33,34 @@ def lulzritmetic(s, keyword):
         plusvars[plusvar] = value
         return body
 
+def lulzplace(s, whoid, keyword):
+    f,p,t = s.partition('/')[2].partition('/')
+    if t == '':
+        return
+    if t[-1:] == '/':
+        t = t[:-1]
+    try:
+        l = lastmsgs[whoid]
+    except KeyError:
+        return
+    body = 'quizir: ' + re.sub(f, t, l)
+    return body
+
 def process_lulz(whoid, msg):
     body = msg.getBody()
+    last = body     # We store this first because replace will eventually
+                    # destroy it
     lulzwords = [ ['++', lulzritmetic],
-                  ['--', lulzritmetic] ]
+                  ['--', lulzritmetic],
+                  ['s/', lulzplace] ]
     found = False
     for key, lulztion in lulzwords:
         if body.find(key) != -1:
-            body = lulztion(body, key)
+            body = lulztion(body, whoid, key)
             found = True
     if found:
         sendtoone(whoid, '[%s] %s' % (getdisplayname(whoid), body))
+    lastmsgs[whoid] = last
     return body
 
 def getlocale():
