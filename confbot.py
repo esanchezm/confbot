@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """confbot -- a conference bot for google talk."""
 
-import sys, time, traceback, re, sqlite3, datetime, logging
+import sys, time, traceback, re, datetime, logging
 import jabber, xmlstream, i18n
 import os.path
 import locale
@@ -10,14 +10,13 @@ from dict4ini import DictIni
 import simplejson as json
 import socket
 import re
+import poll
 
 commandchrs = '/)'
 plusvars = {}
 
 def lulzritmetic(s, keyword):
         plusvar = s[:s.find(keyword)].rpartition(' ')[2]
-        if keyword == '**':
-            operand = int(s.rpartition('**')[2].partition(' ')[0])
         try:
             value = plusvars[plusvar]
         except KeyError:
@@ -36,8 +35,7 @@ def lulzritmetic(s, keyword):
 def process_lulz(whoid, msg):
     body = msg.getBody()
     lulzwords = [ ['++', lulzritmetic],
-                  ['--', lulzritmetic],
-                  ['**', lulzritmetic] ]
+                  ['--', lulzritmetic] ]
     found = False
     for key, lulztion in lulzwords:
         if body.find(key) != -1:
@@ -71,6 +69,7 @@ statcheck = 0
 conf = None 
 userinfo = None
 nick = None
+currentpoll = None
 
 LOG_FILENAME = "debug.log"
 logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG,)
@@ -589,6 +588,80 @@ def cmd_smite(who, msg):
     else:
         systoall(_('%s smites %s').para(getdisplayname(who),smitee))
         
+def cmd_poll(who, msg):
+    '"/poll" Init a poll. Syntax: /poll question'
+
+    if msg.strip().lower() == "":
+        systoone(who, _('It works like /poll question'))
+        return
+    
+    active_poll = poll.PollFactory.get_active_poll()
+    if active_poll is not None:
+        systoone(who, _("There is a running poll:\nAuthor: %s\nQuestion: %s\nAuthor must close it using /endpoll before starting another").para(getdisplayname(getjid(active_poll.author)), active_poll.question))
+        return
+        
+    currentpoll = poll.Poll()
+    try:
+        currentpoll.new(msg, getcleanname(who))
+    except poll.PollException as exception:
+        systoone(who, exception.message)
+        return
+
+    systoall(_('%s has a question for you:\n----\n%s\n----\nPlease vote using /vote <0|1> [reason]').para(getdisplayname(who), msg))
+
+def cmd_endpoll(who, msg):
+    '"/endpoll" Finish a poll. Syntax: /endpoll'
+    
+    active_poll = poll.PollFactory.get_active_poll()
+    if active_poll is None:
+        systoone(who, _("There is no running poll."))
+        return
+    
+    if active_poll.author != getcleanname(who):
+        systoone(who, _("The running poll is not yours. Author: %s\nAsk him to close the vote using /endpoll".para(getdisplayname(active_poll.author))))
+        return
+
+    votes = active_poll.get_votes()
+    systoall(_('%s has closed the poll: "%s"\nResults:').para(getdisplayname(who), active_poll.question))
+    if len(votes):
+        total = 0
+        for vote in votes:
+            total += vote.vote
+            systoall(_('%s voted %s%s\n').para(getdisplayname(getjid(vote.voter)), str(vote), " ("+vote.msg+")" if vote.msg else ""))
+
+        systoall(_('Total votes: %d\nYes: %d\nNo: %d').para(len(votes), total, len(votes) - total))
+    else:
+        systoall(_('There were no votes'))
+    active_poll.close()
+
+def cmd_vote(who, msg):
+    '"/vote" Init a poll. Syntax: /vote <0|1> [reason]'
+    if msg.strip().lower() == "":
+        systoone(who, _('It works like /vote <0|1> [reason]'))
+
+    active_poll = poll.PollFactory.get_active_poll()
+    if active_poll is None:
+        systoone(who, _("There is no running poll."))
+        return
+
+    try:
+        vote = int(msg.split(" ")[0])
+        if vote not in [0, 1]:
+            raise ValueError('Invalid vote')
+    except ValueError:
+        systoone(who, _("You can only vote 0 or 1 %s"))
+        return
+
+    comment = ' '.join(msg.split(' ')[1:])
+    try:
+        active_poll.vote(getcleanname(who), vote, comment or None)
+    except poll.PollException as exception:
+        systoone(who, exception.message)
+        return
+
+    systoone(who, _('Your vote has been registered. Wait for poll ending to show final results'))
+    systoone(getjid(active_poll.author), _('%s has voted').para(getdisplayname(who)))
+
 def cmd_help(who, msg):
     '"/help" Show this help message'
     if msg == 'nick':
@@ -1269,7 +1342,7 @@ def readconfig():
     conf.general.sysprompt = '***'
     conf.general.logpath = 'logs'
     conf.general.language = ''
-    conf.general.status = _('Ready')
+    conf.general.status = ''
     conf.general.maxnicklen = 10
     conf.general.floodback = 0
 

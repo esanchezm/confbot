@@ -4,6 +4,7 @@
 import sqlite3, datetime, glob, sys, re, os
 
 DBNAME = "bot.db"
+POLLDBNAME = "polls.db"
 
 def insert_entry(db, entry):
     db.execute("INSERT INTO log VALUES (?, ?, ?)", (entry["time"], entry["sender"], entry["msg"]))
@@ -50,7 +51,39 @@ CREATE TABLE "log" (
         "msg" TEXT DEFAULT NULL);
 CREATE INDEX "id_index" ON "nick" ("id");
 CREATE INDEX "nick_index" ON "nick" ("nick");
-COMMIT;""")
+COMMIT;
+""")
+    db.commit()
+    c.close()
+    db.close()
+
+    if os.path.isfile(POLLDBNAME):
+        os.unlink(POLLDBNAME)
+
+    db = sqlite3.connect(POLLDBNAME)
+    c = db.cursor()
+    c.executescript("""BEGIN TRANSACTION;
+CREATE TABLE "polls" (
+"id" INTEGER PRIMARY KEY,
+"question" TEXT ,
+"status" INT DEFAULT 1,
+"author" TEXT,
+UNIQUE(question)
+ );
+CREATE TABLE "votes" (
+"id" INTEGER PRIMARY KEY,
+"voter" TEXT DEFAULT NULL,
+"vote" INTEGER,
+"msg" TEXT DEFAULT NULL,
+"poll_id" INTEGER,
+FOREIGN KEY(poll_id) REFERENCES polls(id),
+UNIQUE(voter, poll_id)
+);
+CREATE INDEX "polls_index" ON "polls" ("id");
+CREATE INDEX "question_index" ON "polls" ("question");
+CREATE INDEX "votes_index" ON "votes" ("id");
+COMMIT;
+""")
     db.commit()
     c.close()
     db.close()
