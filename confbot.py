@@ -11,6 +11,7 @@ import simplejson as json
 import socket
 import re
 import poll
+import meme
 
 commandchrs = '/)'
 plusvars = {}
@@ -356,7 +357,10 @@ def sendtoall(msg, butnot=[], including=[], status=None):
             if msgname:
                 print time.strftime("%Y-%m-%d %H:%M:%S"), "<", msgname, ">", msg.encode(locale.getdefaultlocale()[1],'replace')
             else:
-                print time.strftime("%Y-%m-%d %H:%M:%S"), msg.encode(locale.getdefaultlocale()[1])
+		e = locale.getdefaultlocale()[1]
+		if e == None:
+			e = 'utf-8'
+                print time.strftime("%Y-%m-%d %H:%M:%S"), msg.encode(e)
 
     for i in r.getJIDs():
         #away represents users that don't want to chat
@@ -605,7 +609,20 @@ def cmd_smite(who, msg):
         systoall(_('Chuck Norris resents the smite attempt and roundhouse kicks %s in the face').para(getdisplayname(who)))
     else:
         systoall(_('%s smites %s').para(getdisplayname(who),smitee))
-        
+
+def cmd_meme(who, msg):
+    '"/meme" Generate a meme image in memegenerator.net. Syntax: /meme genID imageID \'text0\' \'text1\''
+    r = msg.split('\'')
+    e = r[0].split(' ')
+    if len(r) != 5 or len(e) != 3:
+        systoone(who, _('Syntax is /meme genId imageID \'text0\' \'text1\' ... Quotation matters'))
+	return 
+    memeurl = meme.create_meme(e[0], e[1], r[1], r[3])
+    if memeurl == 'Error' or memeurl == None:
+        systoone(who, _('There was an error generating that meme. Check ID\'s'))
+	return
+    systoall(_('%s generated this meme: %s').para(getdisplayname(who),memeurl))
+
 def cmd_poll(who, msg):
     '"/poll" Init a poll. Syntax: /poll question'
 
