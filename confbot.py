@@ -354,13 +354,13 @@ def sendtoall(msg, butnot=[], including=[], status=None):
     r = con.getRoster()
 
     if conf.general.debug:
-            if msgname:
-                print time.strftime("%Y-%m-%d %H:%M:%S"), "<", msgname, ">", msg.encode(locale.getdefaultlocale()[1],'replace')
-            else:
-		e = locale.getdefaultlocale()[1]
-		if e == None:
-			e = 'utf-8'
-                print time.strftime("%Y-%m-%d %H:%M:%S"), msg.encode(e)
+        if msgname:
+            print time.strftime("%Y-%m-%d %H:%M:%S"), "<", msgname, ">", msg.encode(locale.getdefaultlocale()[1],'replace')
+        else:
+            e = locale.getdefaultlocale()[1]
+            if e == None:
+                e = 'utf-8'
+            print time.strftime("%Y-%m-%d %H:%M:%S"), msg.encode(e)
 
     for i in r.getJIDs():
         #away represents users that don't want to chat
