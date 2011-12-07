@@ -638,7 +638,45 @@ def cmd_meme(who, msg):
         systoone(who, _('There was an error generating the meme.'))
         return
 
-    systoall(_('%s generated this meme: %s').para(getdisplayname(who),memeurl))
+    systoall(_('%s generated this meme: %s').para(getdisplayname(who), memeurl))
+
+def cmd_polls(who, msg):
+    '"/polls" List all the finished polls'
+
+    polls = poll.PollFactory.get_polls()
+    if len(polls) == 0:
+        systoone(who, _("There are no polls. You can create one using /poll question"))
+        return
+
+    polls_str = ""
+    for iter_poll in polls:
+        polls_str += _("\n* Poll: #%d (%s): %s").para(iter_poll.id, getdisplayname(getjid(iter_poll.author)), iter_poll.question)
+    
+    systoone(who, polls_str)
+
+def cmd_pollresults(who, msg):
+    '"/pollresults" Get the results of a given poll. Syntax: /pollresults poll_id '
+
+    if msg.strip().lower() == "":
+        systoone(who, _('It works like /poll poll_id'))
+        return
+
+    try:
+        poll_ = poll.PollFactory.get_poll(msg.strip())
+    except poll.PollException, exception:
+        systoone(who, exception.message)
+        return
+
+    votes = poll_.get_votes()
+    if len(votes):
+        total = 0
+        for vote in votes:
+            total += vote.vote
+            systoone(who, _('%s voted %s%s\n').para(getdisplayname(getjid(vote.voter)), str(vote), " ("+vote.msg+")" if vote.msg else ""))
+
+        systoone(who, _('Total votes: %d\nYes: %d\nNo: %d').para(len(votes), total, len(votes) - total))
+    else:
+        systoone(who, _('There were no votes'))
 
 def cmd_poll(who, msg):
     '"/poll" Init a poll. Syntax: /poll question'
@@ -670,11 +708,11 @@ def cmd_endpoll(who, msg):
         return
     
     if active_poll.author != getcleanname(who):
-        systoone(who, _("The running poll is not yours. Author: %s\nAsk him to close the vote using /endpoll".para(getdisplayname(active_poll.author))))
+        systoone(who, _("The running poll is not yours. Author: %s\nAsk him to close the vote using /endpoll".para(getdisplayname(getjid(active_poll.author)))))
         return
 
-    votes = active_poll.get_votes()
     systoall(_('%s has closed the poll: "%s"\nResults:').para(getdisplayname(who), active_poll.question))
+    votes = active_poll.get_votes()
     if len(votes):
         total = 0
         for vote in votes:

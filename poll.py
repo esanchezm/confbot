@@ -30,6 +30,38 @@ class PollFactory:
             poll = Poll(row["id"])
         return poll
 
+    @staticmethod
+    def get_poll(poll_id):
+        """Get a poll by using a poll id"""
+        pollsdb = PollFactory.get_db()
+        c = pollsdb.cursor()
+        try:
+            c.execute("SELECT id FROM polls WHERE id = ? LIMIT 1", (str(int(poll_id))))
+        except ValueError, e:
+            c.close()
+            pollsdb.close()
+            raise PollException('Invalid poll id: '+poll_id)
+        row = c.fetchone()
+        c.close()
+        pollsdb.close()     
+        poll = Poll(row['id'])
+        return poll
+
+    @staticmethod
+    def get_polls():
+        """Get all the polls"""
+        pollsdb = PollFactory.get_db()
+        c = pollsdb.cursor()
+        c.execute("SELECT id FROM polls WHERE status = 0 ORDER BY id")
+        rows = c.fetchall()
+        c.close()
+        pollsdb.close()     
+        polls = []
+        for row in rows:
+            poll = Poll(row['id'])
+            polls.append(poll)
+        return polls
+
 
 class BaseTable(object):
     def __init__(self, table):
@@ -154,7 +186,6 @@ class Vote(BaseTable):
    
     def __create_vote(self, attrs):
         c = self.pollsdb.cursor()
-        print attrs
         try:
             c.execute("INSERT INTO votes (voter, vote, msg, poll_id) VALUES(?, ?, ?, ?)",\
                       (attrs["voter"], attrs["vote"], attrs["msg"], attrs["poll_id"]))
