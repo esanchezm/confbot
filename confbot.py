@@ -43,7 +43,7 @@ def lulzplace(s, whoid, keyword):
         l = lastmsgs[whoid]
     except KeyError:
         return
-    body = 'quizir: ' + re.sub(f, t, l)
+    body = getdisplayname(whoid) + ' meant _' + re.sub(f, t, l) + '_'
     return body
 
 def process_lulz(whoid, msg):
