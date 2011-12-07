@@ -603,7 +603,7 @@ def cmd_poll(who, msg):
     currentpoll = poll.Poll()
     try:
         currentpoll.new(msg, getcleanname(who))
-    except poll.PollException as exception:
+    except poll.PollException, exception:
         systoone(who, exception.message)
         return
 
@@ -655,7 +655,7 @@ def cmd_vote(who, msg):
     comment = ' '.join(msg.split(' ')[1:])
     try:
         active_poll.vote(getcleanname(who), vote, comment or None)
-    except poll.PollException as exception:
+    except poll.PollException, exception:
         systoone(who, exception.message)
         return
 

@@ -63,6 +63,7 @@ class Poll(BaseTable):
             self._BaseTable__fetch(poll_id)
 
     def new(self, question, author):
+        """Creates a new poll"""
         attrs = {}
         attrs["question"] = question
         attrs["author"]   = author
@@ -83,6 +84,7 @@ class Poll(BaseTable):
         self._BaseTable__fetch(poll_id)
 
     def close(self):
+        """Close the poll"""
         c = self.pollsdb.cursor()
         c.execute("UPDATE polls SET status = 0 WHERE id = ?",\
                   (str(self.id)))
@@ -91,10 +93,12 @@ class Poll(BaseTable):
         self.status = 0
 
     def vote(self, voter, vote_value, msg = None):
+        """Vote"""
         vote = VoteFactory.new_vote(self.id)
         vote.new(voter, vote_value, msg)
 
     def get_votes(self):
+        """Get all the votes on a poll"""
         c = self.pollsdb.cursor()
         c.execute("SELECT id FROM votes WHERE poll_id = ?", (str(self.id)))
         rows = c.fetchall()
@@ -115,6 +119,7 @@ class VoteFactory:
 
     @staticmethod
     def new_vote(poll_id):
+        """Creates a new vote on a poll"""
         return Vote(poll_id, None)
 
 class Vote(BaseTable):
@@ -139,6 +144,7 @@ class Vote(BaseTable):
         return "WTF!" # Should not happen...
 
     def new(self, author, vote, msg = None):
+        """Creates a new vote"""
         attrs = {}
         attrs["poll_id"] = self.poll_id
         attrs["voter"]   = author
