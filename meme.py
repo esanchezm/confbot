@@ -23,7 +23,7 @@ def create_meme(meme, t0, t1):
     }
 
     if not meme in memes:
-        return 'Error'
+        return 'Not Found'
     
     data = dict(data.items() + memes[meme].items())
     

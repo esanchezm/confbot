@@ -623,11 +623,7 @@ def cmd_meme(who, msg):
         systoone(who, _('Avaliable memes: %s').para(meme.list_memes()))
         return
     meme_id = msg.split(' ')[0]
-    if not meme_id in meme.memes.keys():
-        systoone(who, _('Unkown meme %s.').para(meme_id))
-        cmd_listmemes(who, msg)
-        return
-   
+
     line1 = r[1]
     line2 = r[3]
     if not meme_id or not line1 or not line2:
@@ -635,7 +631,11 @@ def cmd_meme(who, msg):
         return
 
     memeurl = meme.create_meme(meme_id, line1, line2)
-    if memeurl == 'Error' or memeurl == None:
+    if memeurl == 'Not Found':
+        systoone(who, _('Unkown meme %s.').para(meme_id))
+        cmd_listmemes(who, msg)
+        return
+    elif memeurl == 'Error' or memeurl == None:
         systoone(who, _('There was an error generating the meme.'))
         return
 
