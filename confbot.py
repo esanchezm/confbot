@@ -650,8 +650,6 @@ def cmd_imdb(who, msg):
     m = ml[0]
     ia.update(m)
     systoall(_('%s asked me to share this movie details with you:').para(getdisplayname(who)))
-    systoall(_('Title: %s').para(m['title']))
-    systoall(_('Year: %s').para(m['year']))
     gs = ''
     for g in m['genres']:
         gs += g + ', '
@@ -667,7 +665,7 @@ def cmd_imdb(who, msg):
     for actor in actors:
         cs += actor['name'] + ', '
     cs = cs[:-2]
-    systoall(_('Cast: %s').para(cs))
+    systoall(_('Title: %s\nYear: %s\nGenres %s\nCast %s\n').para(m['title'], m['year'], gs, cs))
     systoall(_('You can get more info for this movie here: http://www.imdb.com/title/tt%s/').para(m.movieID))
 
 def cmd_polls(who, msg):
